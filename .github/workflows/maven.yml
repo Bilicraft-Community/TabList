@@ -15,13 +15,6 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 14
-    - name: Build Bukkit with Maven
-      run: mvn -B package --file ${{ github.workspace }}/bukkit/pom.xml
-    - name: Upload Bukkit Artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: tablist-dev
-        path: ${{ github.workspace }}/bukkit/target/TabList*.jar
     - name: Build Sponge with Maven
       run: mvn -B package --file ${{ github.workspace }}/Sponge/pom.xml
     - name: Upload Sponge Artifact
