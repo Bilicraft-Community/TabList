@@ -52,8 +52,7 @@ public final class SpongeCommands extends ICommand implements Supplier<CommandCa
 
 				UUID uuid = pl.getUniqueId();
 
-				boolean changed = TabHandler.TABENABLED.containsKey(uuid) ? !TabHandler.TABENABLED.get(uuid) : true;
-				if (changed) {
+				if (!TabHandler.TABENABLED.getOrDefault(uuid, false)) {
 					TabHandler.TABENABLED.put(uuid, true);
 				} else {
 					TabHandler.TABENABLED.remove(uuid);
@@ -74,8 +73,7 @@ public final class SpongeCommands extends ICommand implements Supplier<CommandCa
 
 			UUID uuid = p.getUniqueId();
 
-			boolean changed = TabHandler.TABENABLED.containsKey(uuid) ? !TabHandler.TABENABLED.get(uuid) : true;
-			if (changed) {
+			if (!TabHandler.TABENABLED.getOrDefault(uuid, false)) {
 				TabHandler.TABENABLED.put(uuid, true);
 				sendMsg(src, "&cTab has been disabled for &e" + p.getName() + "&c!");
 			} else {
@@ -95,8 +93,7 @@ public final class SpongeCommands extends ICommand implements Supplier<CommandCa
 
 			UUID uuid = p.getUniqueId();
 
-			boolean changed = TabHandler.TABENABLED.containsKey(uuid) ? !TabHandler.TABENABLED.get(uuid) : true;
-			if (changed) {
+			if (!TabHandler.TABENABLED.getOrDefault(uuid, false)) {
 				TabHandler.TABENABLED.put(uuid, true);
 				sendMsg(src, "&cTab has been disabled in yourself.");
 			} else {

@@ -189,7 +189,7 @@ public class TabList {
 			return "";
 		}
 
-		while (name.contains("%anim:")) { // when using multiple animations
+		while (name.contains("%anim:") && !animations.isEmpty()) { // when using multiple animations
 			synchronized (animations) {
 				for (AnimCreator ac : animations) {
 					name = name.replace("%anim:" + ac.getAnimName() + "%",

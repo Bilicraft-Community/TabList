@@ -107,92 +107,90 @@ public class TabListManager {
 	}
 
 	protected void sendTab() {
-		final Player player = Sponge.getServer().getPlayer(playerUuid).orElse(null);
-		if (player == null || !player.isOnline()) {
-			return;
-		}
-
-		final ConfigManager conf = plugin.getC().getConfig();
-		if (conf.getStringList("tablist", "disabled-worlds").contains(player.getWorld().getName())
-				|| conf.getStringList("tablist", "restricted-players").contains(player.getName())
-				|| TabHandler.TABENABLED.getOrDefault(playerUuid, false)) {
-			sendTabList(player, "", "");
-			return;
-		}
-
-		String he = "";
-		int r = 0;
-
-		if (getHeader().isPresent()) {
-			if (ConfigValues.isRandomTablist()) {
-				he = header.get(ThreadLocalRandom.current().nextInt(header.size()));
+		Sponge.getServer().getPlayer(playerUuid).filter(player -> player.isOnline()).ifPresent(player -> {
+			if (plugin.getC().getConfig().getStringList("tablist", "disabled-worlds")
+					.contains(player.getWorld().getName())
+					|| plugin.getC().getConfig().getStringList("tablist", "restricted-players")
+							.contains(player.getName())
+					|| TabHandler.TABENABLED.getOrDefault(playerUuid, false)) {
+				sendTabList(player, "", "");
+				return;
 			}
 
-			if (he.isEmpty()) {
-				for (String line : header) {
-					r++;
+			String he = "";
+			int r = 0;
 
-					if (r > 1) {
-						he += "\n\u00a7r";
+			if (getHeader().isPresent()) {
+				if (ConfigValues.isRandomTablist()) {
+					he = header.get(ThreadLocalRandom.current().nextInt(header.size()));
+				}
+
+				if (he.isEmpty()) {
+					for (String line : header) {
+						r++;
+
+						if (r > 1) {
+							he += "\n\u00a7r";
+						}
+
+						he += line;
 					}
-
-					he += line;
 				}
 			}
-		}
 
-		String fo = "";
+			String fo = "";
 
-		if (getFooter().isPresent()) {
-			if (ConfigValues.isRandomTablist()) {
-				fo = footer.get(ThreadLocalRandom.current().nextInt(footer.size()));
-			}
+			if (getFooter().isPresent()) {
+				if (ConfigValues.isRandomTablist()) {
+					fo = footer.get(ThreadLocalRandom.current().nextInt(footer.size()));
+				}
 
-			if (fo.isEmpty()) {
-				r = 0;
+				if (fo.isEmpty()) {
+					r = 0;
 
-				for (String line : footer) {
-					r++;
+					for (String line : footer) {
+						r++;
 
-					if (r > 1) {
-						fo += "\n\u00a7r";
+						if (r > 1) {
+							fo += "\n\u00a7r";
+						}
+
+						fo += line;
 					}
-
-					fo += line;
 				}
 			}
-		}
 
-		if (!he.trim().isEmpty()) {
-			he = plugin.makeAnim(he);
-		}
-
-		if (!fo.trim().isEmpty()) {
-			fo = plugin.makeAnim(fo);
-		}
-
-		final String resultHeader = he;
-		final String resultFooter = fo;
-
-		final Variables v = plugin.getVariables();
-		if (v == null) {
-			return;
-		}
-
-		if (!worldList.isEmpty()) {
-			for (String l : worldList) {
-				Sponge.getServer().getWorld(l).ifPresent(w -> {
-					for (Player pl : w.getPlayers()) {
-						sendTabList(pl, v.replaceVariables(pl, resultHeader), v.replaceVariables(pl, resultFooter));
-					}
-				});
+			if (!he.trim().isEmpty()) {
+				he = plugin.makeAnim(he);
 			}
 
-			return;
-		}
+			if (!fo.trim().isEmpty()) {
+				fo = plugin.makeAnim(fo);
+			}
 
-		Sponge.getServer().getPlayer(playerUuid).ifPresent(
-				p -> sendTabList(p, v.replaceVariables(p, resultHeader), v.replaceVariables(p, resultFooter)));
+			final String resultHeader = he;
+			final String resultFooter = fo;
+
+			final Variables v = plugin.getVariables();
+			if (v == null) {
+				return;
+			}
+
+			if (!worldList.isEmpty()) {
+				for (String l : worldList) {
+					Sponge.getServer().getWorld(l).ifPresent(w -> {
+						for (Player pl : w.getPlayers()) {
+							sendTabList(pl, v.replaceVariables(pl, resultHeader), v.replaceVariables(pl, resultFooter));
+						}
+					});
+				}
+
+				return;
+			}
+
+			Sponge.getServer().getPlayer(playerUuid).ifPresent(
+					p -> sendTabList(p, v.replaceVariables(p, resultHeader), v.replaceVariables(p, resultFooter)));
+		});
 	}
 
 	public void sendTabList(Player p, String header, String footer) {

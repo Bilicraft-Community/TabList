@@ -92,20 +92,14 @@ public class TabGroup implements Cloneable {
 				b.registerTeam(team);
 			}
 
-			/*Text representationName = player.getTeamRepresentation();
-			if (!team.getMembers().contains(representationName)) {
-				team.addMember(representationName);
-			}*/
-
 			final Text resultName = TabList.get().getVariables().replaceVariables(player,
 					pref + player.getName() + suf);
 
-			Sponge.getServer().getOnlinePlayers().forEach(all -> {
-				all.getTabList().getEntry(player.getUniqueId()).ifPresent(te -> {
-					te.setDisplayName(resultName);
-					all.setScoreboard(b);
-				});
-			});
+			Sponge.getServer().getOnlinePlayers()
+					.forEach(all -> all.getTabList().getEntry(player.getUniqueId()).ifPresent(te -> {
+						te.setDisplayName(resultName);
+						all.setScoreboard(b);
+					}));
 		});
 	}
 
