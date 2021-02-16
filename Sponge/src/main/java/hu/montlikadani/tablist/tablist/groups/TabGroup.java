@@ -8,8 +8,8 @@ import org.spongepowered.api.scoreboard.Scoreboard;
 import org.spongepowered.api.scoreboard.Team;
 import org.spongepowered.api.text.Text;
 
-import hu.montlikadani.tablist.ConfigValues;
 import hu.montlikadani.tablist.TabList;
+import hu.montlikadani.tablist.config.ConfigValues;
 
 public class TabGroup implements Cloneable {
 

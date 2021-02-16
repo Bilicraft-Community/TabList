@@ -16,6 +16,7 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.serializer.TextSerializers;
 
+import hu.montlikadani.tablist.config.ConfigValues;
 import hu.montlikadani.tablist.utils.operators.ExpressionNode;
 import hu.montlikadani.tablist.utils.operators.OperatorNodes;
 

@@ -1,4 +1,4 @@
-package hu.montlikadani.tablist;
+package hu.montlikadani.tablist.config;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,6 +13,7 @@ import org.spongepowered.api.config.DefaultConfig;
 import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
 
+import hu.montlikadani.tablist.TabList;
 import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
@@ -162,13 +163,11 @@ public class ConfigManager {
 	}
 
 	public boolean isString(Object... path) {
-		Object val = get(path).getValue();
-		return val instanceof String;
+		return get(path).getValue() instanceof String;
 	}
 
 	public boolean isList(Object... path) {
-		Object val = get(path).getValue();
-		return val instanceof List;
+		return get(path).getValue() instanceof List;
 	}
 
 	public void save() {

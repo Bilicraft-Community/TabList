@@ -17,6 +17,9 @@ import org.spongepowered.api.scoreboard.Scoreboard;
 import com.google.inject.Inject;
 
 import hu.montlikadani.tablist.commands.SpongeCommands;
+import hu.montlikadani.tablist.config.ConfigHandlers;
+import hu.montlikadani.tablist.config.ConfigManager;
+import hu.montlikadani.tablist.config.ConfigValues;
 import hu.montlikadani.tablist.tablist.TabHandler;
 import hu.montlikadani.tablist.tablist.groups.GroupTask;
 import hu.montlikadani.tablist.tablist.groups.TabGroup;
@@ -24,7 +27,6 @@ import hu.montlikadani.tablist.tablist.objects.ObjectType;
 import hu.montlikadani.tablist.tablist.objects.TabListObjects;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -45,7 +47,7 @@ public class TabList {
 	private TabListObjects objects;
 
 	private final Set<TabGroup> groupsList = new HashSet<>();
-	private final Set<AnimCreator> animations = Collections.synchronizedSet(new HashSet<AnimCreator>());
+	private final Set<AnimCreator> animations = new HashSet<>();
 
 	public static final Scoreboard BOARD = Sponge.getServer().getServerScoreboard()
 			.orElse(Scoreboard.builder().build());
@@ -92,20 +94,18 @@ public class TabList {
 			config = new ConfigHandlers(this, "spongeConfig.conf", true);
 		}
 
-		config.reload();
-		ConfigValues.loadValues();
-
 		if (groupsFile == null) {
 			groupsFile = new ConfigHandlers(this, "groups.conf", false);
 		}
-
-		groupsFile.reload();
 
 		if (animationsFile == null) {
 			animationsFile = new ConfigHandlers(this, "animations.conf", false);
 		}
 
+		config.reload();
+		groupsFile.reload();
 		animationsFile.reload();
+		ConfigValues.loadValues();
 	}
 
 	public void reload() {
@@ -181,12 +181,10 @@ public class TabList {
 			return "";
 		}
 
-		while (name.contains("%anim:") && !animations.isEmpty()) { // when using multiple animations
-			synchronized (animations) {
-				for (AnimCreator ac : animations) {
-					name = name.replace("%anim:" + ac.getAnimName() + "%",
-							ac.getTime() > 0 ? ac.getRandomText() : ac.getFirstText());
-				}
+		while (!animations.isEmpty() && name.contains("%anim:")) { // when using multiple animations
+			for (AnimCreator ac : animations) {
+				name = name.replace("%anim:" + ac.getAnimName() + "%",
+						ac.getTime() > 0 ? ac.getRandomText() : ac.getFirstText());
 			}
 		}
 

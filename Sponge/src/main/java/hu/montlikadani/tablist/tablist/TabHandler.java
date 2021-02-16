@@ -11,8 +11,8 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.scheduler.Task;
 
-import hu.montlikadani.tablist.ConfigValues;
 import hu.montlikadani.tablist.TabList;
+import hu.montlikadani.tablist.config.ConfigValues;
 
 public class TabHandler {
 

@@ -1,8 +1,10 @@
-# TabList [![GitHub issues](https://img.shields.io/github/issues/montlikadani/TabList.svg)](https://github.com/montlikadani/TabList/issues)
+# TabList
 
 ***
 
 A fully configurable plugin that allows all online players that are one the server to get an animated tablist with header/footer, which is configurable per config.
+
+This is the Sponge branch which only supports 7.3.0 version
 
 ## Link
 * [Sponge](https://ore.spongepowered.org/montlikadani/%5BAnimated-Tab%5D---TabList)

@@ -17,9 +17,9 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.text.serializer.TextSerializers;
 
-import hu.montlikadani.tablist.ConfigValues;
 import hu.montlikadani.tablist.Debug;
 import hu.montlikadani.tablist.TabList;
+import hu.montlikadani.tablist.config.ConfigValues;
 
 public class TabListObjects {
 

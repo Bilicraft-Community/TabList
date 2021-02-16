@@ -11,10 +11,10 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 
-import hu.montlikadani.tablist.ConfigManager;
-import hu.montlikadani.tablist.ConfigValues;
 import hu.montlikadani.tablist.TabList;
 import hu.montlikadani.tablist.Variables;
+import hu.montlikadani.tablist.config.ConfigManager;
+import hu.montlikadani.tablist.config.ConfigValues;
 
 public class TabListManager {
 
@@ -160,11 +160,11 @@ public class TabListManager {
 				}
 			}
 
-			if (!he.trim().isEmpty()) {
+			if (!he.isEmpty()) {
 				he = plugin.makeAnim(he);
 			}
 
-			if (!fo.trim().isEmpty()) {
+			if (!fo.isEmpty()) {
 				fo = plugin.makeAnim(fo);
 			}
 

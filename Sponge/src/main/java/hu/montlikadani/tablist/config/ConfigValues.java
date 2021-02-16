@@ -1,7 +1,9 @@
-package hu.montlikadani.tablist;
+package hu.montlikadani.tablist.config;
 
 import java.util.Arrays;
 import java.util.List;
+
+import hu.montlikadani.tablist.TabList;
 
 public class ConfigValues {
 

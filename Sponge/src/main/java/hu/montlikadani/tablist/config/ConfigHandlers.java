@@ -1,9 +1,11 @@
-package hu.montlikadani.tablist;
+package hu.montlikadani.tablist.config;
 
 import java.nio.file.Path;
 import java.util.function.Supplier;
 
 import org.spongepowered.api.Sponge;
+
+import hu.montlikadani.tablist.TabList;
 
 public class ConfigHandlers implements Supplier<ConfigManager> {
 
