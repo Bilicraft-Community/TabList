@@ -47,7 +47,7 @@ public class ConfigManager {
 
 		this.file = new File(folder, name);
 		this.loader = HoconConfigurationLoader.builder().setFile(file)
-				.setDefaultOptions(ConfigurationOptions.defaults().setShouldCopyDefaults(true)).build();
+				.setDefaultOptions(ConfigurationOptions.defaults().withShouldCopyDefaults(true)).build();
 	}
 
 	public String getPath() {
@@ -97,7 +97,7 @@ public class ConfigManager {
 	}
 
 	public void set(Object value, Object... path) {
-		if (!contains(path) && TabList.get().getC().isSetMissing()) {
+		if (!contains(path) && TabList.get().getConfig().isSetMissing()) {
 			get(path).setValue(value);
 		}
 	}

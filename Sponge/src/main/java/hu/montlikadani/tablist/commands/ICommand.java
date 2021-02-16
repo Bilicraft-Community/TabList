@@ -8,7 +8,7 @@ import org.spongepowered.api.text.serializer.TextSerializers;
 public abstract class ICommand {
 
 	protected final boolean hasPerm(CommandSource src, String perm) {
-		return !(src instanceof Player) ? true : src.hasPermission(perm);
+		return !(src instanceof Player) || src.hasPermission(perm);
 	}
 
 	protected final void sendMsg(CommandSource src, String msg) {

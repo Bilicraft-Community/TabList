@@ -2,6 +2,7 @@ package hu.montlikadani.tablist.tablist.objects;
 
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
@@ -23,10 +24,11 @@ import hu.montlikadani.tablist.TabList;
 public class TabListObjects {
 
 	private TabList plugin;
-
 	private Task task;
 
 	private ObjectType type = ObjectType.NONE;
+
+	private final AtomicInteger value = new AtomicInteger();
 
 	public TabListObjects(TabList plugin) {
 		this.plugin = plugin;
@@ -88,8 +90,7 @@ public class TabListObjects {
 			return;
 		}
 
-		type = ObjectType.getByName(ConfigValues.getTablistObjectsType());
-		if (type == ObjectType.NONE) {
+		if ((type = ObjectType.getByName(ConfigValues.getTablistObjectsType())) == ObjectType.NONE) {
 			return;
 		}
 
@@ -110,9 +111,8 @@ public class TabListObjects {
 			}
 
 			Sponge.getServer().getOnlinePlayers().forEach(all -> {
-				int score = 0;
 				if (type == ObjectType.PING) {
-					score = all.getConnection().getLatency();
+					value.set(all.getConnection().getLatency());
 				} else if (type == ObjectType.CUSTOM) {
 					String result = TextSerializers.PLAIN
 							.serialize(plugin.getVariables().replaceVariables(all, ConfigValues.getCustomObject()));
@@ -120,7 +120,7 @@ public class TabListObjects {
 					result = result.replaceAll("[^\\d]", "");
 
 					try {
-						score = Integer.parseInt(result);
+						value.set(Integer.parseInt(result));
 					} catch (NumberFormatException e) {
 						Debug.warn("Not correct custom objective: " + ConfigValues.getCustomObject());
 					}
@@ -130,23 +130,20 @@ public class TabListObjects {
 				final Objective object = getObjective(objName)
 						.orElse(Objective.builder().displayName(Text.of("tabObjects")).name(objName)
 								.objectiveDisplayMode(ObjectiveDisplayModes.INTEGER).criterion(Criteria.DUMMY).build());
-				final Scoreboard board = TabList.BOARD;
 
-				if (!board.getObjective(objName).isPresent()) {
-					board.addObjective(object);
+				if (!TabList.BOARD.getObjective(objName).isPresent()) {
+					TabList.BOARD.addObjective(object);
 				}
 
-				board.updateDisplaySlot(object, DisplaySlots.LIST);
+				TabList.BOARD.updateDisplaySlot(object, DisplaySlots.LIST);
 
-				final int fScore = score;
 				Optional<Score> s = object.getScore(Text.of(all.getName()));
-				if (!s.isPresent() || s.get().getScore() != fScore) {
-					Sponge.getServer().getOnlinePlayers().forEach(p -> {
-						getObjective(objName).ifPresent(obj -> {
-							obj.getOrCreateScore(Text.of(all.getName())).setScore(fScore);
-							p.setScoreboard(board);
-						});
-					});
+
+				if (!s.isPresent() || s.get().getScore() != value.get()) {
+					Sponge.getServer().getOnlinePlayers().forEach(p -> getObjective(objName).ifPresent(obj -> {
+						obj.getOrCreateScore(Text.of(all.getName())).setScore(value.get());
+						p.setScoreboard(TabList.BOARD);
+					}));
 				}
 			});
 		}).submit(plugin);

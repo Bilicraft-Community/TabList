@@ -45,7 +45,8 @@ public class TabPlayer implements Comparable<TabPlayer> {
 				.filter(group -> group.getGroupName().equalsIgnoreCase(p.get().getName())).collect(Collectors.toList());
 		if (!playerNameGroups.isEmpty()) {
 			TabGroup group = playerNameGroups.get(0);
-			if (this.group != group) {
+
+			if (!group.equals(this.group)) {
 				update = true;
 				setGroup(group);
 			}
@@ -54,12 +55,10 @@ public class TabPlayer implements Comparable<TabPlayer> {
 		}
 
 		for (TabGroup group : groupsList) {
-			if (!group.getPermission().isEmpty() && p.get().hasPermission(group.getPermission())) {
-				if (this.group != group) {
-					update = true;
-					setGroup(group);
-				}
-
+			if (!group.getPermission().isEmpty() && p.get().hasPermission(group.getPermission())
+					&& !group.equals(this.group)) {
+				update = true;
+				setGroup(group);
 				break;
 			}
 		}

@@ -109,10 +109,6 @@ public class TabList {
 	}
 
 	public void reload() {
-		if (tabHandler == null) {
-			tabHandler = new TabHandler(this);
-		}
-
 		tabHandler.removeAll();
 
 		if (groupTask != null) {
@@ -136,18 +132,18 @@ public class TabList {
 		}
 
 		int last = 0;
-		for (Object gr : groupsFile.getConfig().get("groups").getChildrenMap().keySet()) {
+		for (Object gr : groupsFile.get().get("groups").getChildrenMap().keySet()) {
 			String name = (String) gr;
 
 			if (name.equalsIgnoreCase("exampleGroup")) {
 				continue;
 			}
 
-			String prefix = groupsFile.getConfig().getString("", "groups", name, "prefix"),
-					suffix = groupsFile.getConfig().getString("", "groups", name, "suffix"),
-					permission = groupsFile.getConfig().getString("tablist." + name, "groups", name, "permission");
+			String prefix = groupsFile.get().getString("", "groups", name, "prefix"),
+					suffix = groupsFile.get().getString("", "groups", name, "suffix"),
+					permission = groupsFile.get().getString("tablist." + name, "groups", name, "permission");
 
-			int priority = groupsFile.getConfig().getInt(last + 1, "groups", name, "priority");
+			int priority = groupsFile.get().getInt(last + 1, "groups", name, "priority");
 
 			groupsList.add(new TabGroup(name, prefix, suffix, permission, priority));
 
@@ -158,11 +154,7 @@ public class TabList {
 	private void loadAnimations() {
 		animations.clear();
 
-		if (animationsFile == null || !animationsFile.getConfig().getFile().exists()) {
-			initConfigs();
-		}
-
-		ConfigManager c = animationsFile.getConfig();
+		ConfigManager c = animationsFile.get();
 		if (!c.contains("animations")) {
 			return;
 		}
@@ -217,10 +209,6 @@ public class TabList {
 		groupTask.addPlayer(player);
 		groupTask.runTask();
 
-		if (objects == null) {
-			objects = new TabListObjects(this);
-		}
-
 		for (ObjectType t : ObjectType.values()) {
 			if (t != ObjectType.HEARTH) {
 				objects.unregisterObjective(player, t.getName());
@@ -239,18 +227,14 @@ public class TabList {
 			groupTask.removePlayer(player);
 		}
 
-		if (objects != null) {
-			objects.unregisterAllObjective(player);
-		}
+		objects.unregisterAllObjective(player);
 	}
 
 	public void cancelAll() {
 		tabHandler.removeAll();
 
-		if (objects != null) {
-			objects.cancelTask();
-			objects.unregisterAllObjective();
-		}
+		objects.cancelTask();
+		objects.unregisterAllObjective();
 
 		if (groupTask != null) {
 			groupTask.cancel();
@@ -272,7 +256,7 @@ public class TabList {
 		return groupTask;
 	}
 
-	public ConfigHandlers getC() {
+	public ConfigHandlers getConfig() {
 		return config;
 	}
 

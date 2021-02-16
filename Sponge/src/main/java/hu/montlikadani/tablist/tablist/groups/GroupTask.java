@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import org.spongepowered.api.Sponge;
@@ -14,7 +15,7 @@ import hu.montlikadani.tablist.TabList;
 
 public class GroupTask implements Consumer<Task> {
 
-	private final HashMap<String, TabPlayer> tabPlayers = new HashMap<>();
+	private final Map<String, TabPlayer> tabPlayers = new HashMap<>();
 	private final List<TabPlayer> sortedTabPlayers = Collections.synchronizedList(new LinkedList<TabPlayer>());
 
 	private Task task;
@@ -23,7 +24,7 @@ public class GroupTask implements Consumer<Task> {
 		return task;
 	}
 
-	public HashMap<String, TabPlayer> getTabPlayers() {
+	public Map<String, TabPlayer> getTabPlayers() {
 		return tabPlayers;
 	}
 
@@ -83,12 +84,10 @@ public class GroupTask implements Consumer<Task> {
 	}
 
 	public void cancel() {
-		if (!isRunning()) {
-			return;
+		if (isRunning()) {
+			task.cancel();
+			task = null;
 		}
-
-		task.cancel();
-		task = null;
 	}
 
 	public boolean isRunning() {

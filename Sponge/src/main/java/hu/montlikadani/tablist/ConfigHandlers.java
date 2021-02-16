@@ -1,10 +1,11 @@
 package hu.montlikadani.tablist;
 
 import java.nio.file.Path;
+import java.util.function.Supplier;
 
 import org.spongepowered.api.Sponge;
 
-public class ConfigHandlers {
+public class ConfigHandlers implements Supplier<ConfigManager> {
 
 	private TabList plugin;
 	private String name;
@@ -17,6 +18,27 @@ public class ConfigHandlers {
 		this.plugin = plugin;
 		this.name = name;
 		this.setMissing = setMissing;
+	}
+
+	@Override
+	public ConfigManager get() {
+		return config;
+	}
+
+	public boolean isExists() {
+		return config != null && config.getFile().exists();
+	}
+
+	public Path getPath() {
+		return path;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public boolean isSetMissing() {
+		return setMissing;
 	}
 
 	public void createFile() {
@@ -32,25 +54,5 @@ public class ConfigHandlers {
 
 		config.load();
 		config.save();
-	}
-
-	public boolean isExists() {
-		return config != null && config.getFile().exists();
-	}
-
-	public Path getPath() {
-		return path;
-	}
-
-	public ConfigManager getConfig() {
-		return config;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public boolean isSetMissing() {
-		return setMissing;
 	}
 }

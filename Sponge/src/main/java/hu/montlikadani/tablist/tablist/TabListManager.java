@@ -71,7 +71,7 @@ public class TabListManager {
 			return;
 		}
 
-		final ConfigManager conf = plugin.getC().getConfig();
+		final ConfigManager conf = plugin.getConfig().get();
 
 		header = conf.isList("tablist", "header") ? conf.getStringList("tablist", "header")
 				: conf.isString("tablist", "header")
@@ -82,7 +82,7 @@ public class TabListManager {
 						? Arrays.asList(conf.getString(new Object[] { "tablist", "footer" }))
 						: null;
 
-		if (conf.contains("tablist", "per-world") && conf.get("tablist", "per-world").hasMapChildren()) {
+		if (conf.contains("tablist", "per-world") && conf.get("tablist", "per-world").isMap()) {
 			t: for (Object w : conf.get("tablist", "per-world").getChildrenMap().keySet()) {
 				for (String split : w.toString().split(", ")) {
 					if (p.getWorld().getName().equals(split)) {
@@ -108,9 +108,9 @@ public class TabListManager {
 
 	protected void sendTab() {
 		Sponge.getServer().getPlayer(playerUuid).filter(player -> player.isOnline()).ifPresent(player -> {
-			if (plugin.getC().getConfig().getStringList("tablist", "disabled-worlds")
+			if (plugin.getConfig().get().getStringList("tablist", "disabled-worlds")
 					.contains(player.getWorld().getName())
-					|| plugin.getC().getConfig().getStringList("tablist", "restricted-players")
+					|| plugin.getConfig().get().getStringList("tablist", "restricted-players")
 							.contains(player.getName())
 					|| TabHandler.TABENABLED.getOrDefault(playerUuid, false)) {
 				sendTabList(player, "", "");
@@ -177,19 +177,14 @@ public class TabListManager {
 			}
 
 			if (!worldList.isEmpty()) {
-				for (String l : worldList) {
-					Sponge.getServer().getWorld(l).ifPresent(w -> {
-						for (Player pl : w.getPlayers()) {
-							sendTabList(pl, v.replaceVariables(pl, resultHeader), v.replaceVariables(pl, resultFooter));
-						}
-					});
-				}
+				worldList.forEach(
+						l -> Sponge.getServer().getWorld(l).ifPresent(w -> w.getPlayers().forEach(pl -> sendTabList(pl,
+								v.replaceVariables(pl, resultHeader), v.replaceVariables(pl, resultFooter)))));
 
 				return;
 			}
 
-			Sponge.getServer().getPlayer(playerUuid).ifPresent(
-					p -> sendTabList(p, v.replaceVariables(p, resultHeader), v.replaceVariables(p, resultFooter)));
+			sendTabList(player, v.replaceVariables(player, resultHeader), v.replaceVariables(player, resultFooter));
 		});
 	}
 

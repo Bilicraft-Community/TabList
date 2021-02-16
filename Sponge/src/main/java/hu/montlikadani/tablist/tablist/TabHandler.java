@@ -88,6 +88,6 @@ public class TabHandler {
 	}
 
 	public Optional<TabListManager> getPlayerTab(final Player player) {
-		return tabPlayers.stream().filter(tab -> tab.getPlayerUuid().equals(player.getUniqueId())).findFirst();
+		return tabPlayers.stream().filter(tab -> player.getUniqueId().equals(tab.getPlayerUuid())).findFirst();
 	}
 }

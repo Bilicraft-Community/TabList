@@ -115,6 +115,11 @@ public class TabGroup implements Cloneable {
 	}
 
 	@Override
+	public boolean equals(Object obj) {
+		return obj == this || (obj instanceof TabGroup && groupName.equalsIgnoreCase(((TabGroup) obj).getGroupName()));
+	}
+
+	@Override
 	public Object clone() {
 		try {
 			return super.clone();

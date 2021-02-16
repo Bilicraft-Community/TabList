@@ -15,7 +15,7 @@ public class ConfigValues {
 	private static List<String> pingColorFormats;
 
 	public static void loadValues() {
-		ConfigManager c = TabList.get().getC().getConfig();
+		ConfigManager c = TabList.get().getConfig().get();
 
 		c.setComment("Placeholder formatting", "placeholder-format");
 		c.setComment("Formats/examples: https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html\n"
