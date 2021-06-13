@@ -49,7 +49,7 @@ public class OperatorNodes implements ExpressionNode {
 			return null;
 		}
 
-		String[] array = String.valueOf(str.replace(" ", "").replace(operator, ";").toCharArray()).split(";");
+		String[] array = String.valueOf(str.replace(" ", "").replace(operator, ";").toCharArray()).split(";", 2);
 
 		if (array.length > 1 && array[1].replaceAll("[^\\d]", "").matches("[0-9]+")) {
 			return new Condition(operator, array);
