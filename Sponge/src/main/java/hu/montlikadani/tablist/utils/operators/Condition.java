@@ -2,12 +2,29 @@ package hu.montlikadani.tablist.utils.operators;
 
 public class Condition {
 
-	private String operator;
-	private String[] parseable;
+	private final String operator;
+	private final String[] parseable;
+
+	private String color = "";
+	private int secondCondition = 0;
 
 	public Condition(String operator, String[] parseable) {
 		this.operator = operator;
-		this.parseable = parseable == null ? new String[0] : parseable;
+
+		if (parseable == null) {
+			parseable = new String[0];
+		}
+
+		this.parseable = parseable;
+
+		if (parseable.length > 1) {
+			try {
+				secondCondition = Integer.parseInt(parseable[1]);
+			} catch (NumberFormatException e) {
+			}
+
+			color = parseable[0].replace("%player-ping%", "");
+		}
 	}
 
 	public String[] getParseable() {
@@ -19,23 +36,10 @@ public class Condition {
 	}
 
 	public int getSecondCondition() {
-		try {
-			return parseable.length > 1 ? Integer.parseInt(parseable[1].trim()) : 0;
-		} catch (NumberFormatException e) {
-			return 0;
-		}
+		return secondCondition;
 	}
 
 	public String getColor() {
-		String color = parseable.length != 0 ? parseable[0] : "";
-		if (!color.trim().isEmpty()) {
-			if (color.contains("%player-ping%")) {
-				color = color.replace("%player-ping%", "");
-			}
-
-			color = color.trim();
-		}
-
 		return color;
 	}
 }

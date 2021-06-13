@@ -1,6 +1,6 @@
 package hu.montlikadani.tablist.commands;
 
-import java.util.UUID;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import org.spongepowered.api.Sponge;
@@ -15,92 +15,76 @@ import org.spongepowered.api.text.Text;
 
 import hu.montlikadani.tablist.TabList;
 import hu.montlikadani.tablist.tablist.TabHandler;
+import hu.montlikadani.tablist.user.TabListUser;
 
-@Command(name = "tablist", aliases = { "tablist", "tl" }, subCommands = "toggle")
 public final class SpongeCommands extends ICommand implements Supplier<CommandCallable> {
 
-	private TabList plugin;
-
-	private CommandCallable toggleCmd;
+	private final TabList plugin;
+	private final CommandCallable toggleCmd;
 
 	public SpongeCommands() {
-		throw new IllegalAccessError(toString() + " can't be instantiated.");
+		throw new IllegalAccessError(getClass().getSimpleName() + " can't be instantiated.");
 	}
 
 	public SpongeCommands(TabList plugin) {
 		this.plugin = plugin;
 
-		toggleCmd = CommandSpec.builder().description(Text.of("Toggle on/off the tablist."))
+		toggleCmd = CommandSpec.builder().description(Text.of("Toggles the visibility of tablist"))
 				.arguments(GenericArguments.optional(GenericArguments.firstParsing(
 						GenericArguments.onlyOne(GenericArguments.player(Text.of("player"))),
 						GenericArguments.string(Text.of("all")))))
-				.permission("tablist.toggle").executor(this::handleToggle).build();
+				.permission("tablist.toggle").executor(this::processToggle).build();
 
-		Sponge.getCommandManager().register(plugin, get(), getClass().getAnnotation(Command.class).aliases());
+		Sponge.getCommandManager().register(plugin, get(), new String[] { "tablist", "tl" });
 	}
 
-	private CommandResult handleToggle(CommandSource src, CommandContext args) {
+	private CommandResult processToggle(CommandSource src, CommandContext args) {
 		if ("all".equalsIgnoreCase(args.<String>getOne("all").orElse(""))) {
 			if (!hasPerm(src, "tablist.toggle.all")) {
 				return CommandResult.empty();
 			}
 
-			for (Player pl : Sponge.getServer().getOnlinePlayers()) {
-				if (!plugin.getTabHandler().isPlayerInTab(pl)) {
-					continue;
-				}
-
-				UUID uuid = pl.getUniqueId();
-
-				if (!TabHandler.TABENABLED.getOrDefault(uuid, false)) {
-					TabHandler.TABENABLED.put(uuid, true);
+			for (TabListUser user : plugin.getTabUsers()) {
+				if (TabHandler.TABENABLED.remove(user.getUniqueId()) == null) {
+					TabHandler.TABENABLED.put(user.getUniqueId(), true);
 				} else {
-					TabHandler.TABENABLED.remove(uuid);
-					plugin.getTabHandler().getPlayerTab(pl).get().loadTab();
+					user.getTabListManager().loadTab();
 				}
 			}
 
-			sendMsg(src, Sponge.getServer().getOnlinePlayers().isEmpty() ? "&cNo one on the server"
-					: "&2Tab has been toggled for everyone!");
+			sendMsg(src, plugin.getTabUsers().isEmpty() ? "&cNo one on the server"
+					: "&2Tab has been switched for everyone!");
 			return CommandResult.success();
 		}
 
-		if (args.<Player>getOne("player").isPresent()) {
-			Player p = args.<Player>getOne("player").get();
-			if (!plugin.getTabHandler().isPlayerInTab(p)) {
-				return CommandResult.empty();
-			}
+		Optional<Player> one = args.<Player>getOne("player");
 
-			UUID uuid = p.getUniqueId();
+		if (one.isPresent()) {
+			Player target = one.get();
 
-			if (!TabHandler.TABENABLED.getOrDefault(uuid, false)) {
-				TabHandler.TABENABLED.put(uuid, true);
-				sendMsg(src, "&cTab has been disabled for &e" + p.getName() + "&c!");
-			} else {
-				TabHandler.TABENABLED.remove(uuid);
-				plugin.getTabHandler().getPlayerTab(p).get().loadTab();
-				sendMsg(src, "&aTab has been enabled for &e" + p.getName() + "&a!");
-			}
+			plugin.getUser(target).ifPresent(user -> {
+				if (TabHandler.TABENABLED.remove(user.getUniqueId()) == null) {
+					TabHandler.TABENABLED.put(user.getUniqueId(), true);
+					sendMsg(src, "&cTab has been disabled for &e" + target.getName() + "&c!");
+				} else {
+					user.getTabListManager().loadTab();
+					sendMsg(src, "&aTab has been enabled for &e" + target.getName() + "&a!");
+				}
+			});
 
 			return CommandResult.success();
 		}
 
 		if (src instanceof Player) {
-			Player p = (Player) src;
-			if (!plugin.getTabHandler().isPlayerInTab(p)) {
-				return CommandResult.empty();
-			}
-
-			UUID uuid = p.getUniqueId();
-
-			if (!TabHandler.TABENABLED.getOrDefault(uuid, false)) {
-				TabHandler.TABENABLED.put(uuid, true);
-				sendMsg(src, "&cTab has been disabled in yourself.");
-			} else {
-				TabHandler.TABENABLED.remove(uuid);
-				plugin.getTabHandler().getPlayerTab(p).get().loadTab();
-				sendMsg(src, "&aTab has been enabled in yourself.");
-			}
+			plugin.getUser((Player) src).ifPresent(user -> {
+				if (TabHandler.TABENABLED.remove(user.getUniqueId()) == null) {
+					TabHandler.TABENABLED.put(user.getUniqueId(), true);
+					sendMsg(src, "&cTab has been disabled for you.");
+				} else {
+					user.getTabListManager().loadTab();
+					sendMsg(src, "&aTab has been enabled for you.");
+				}
+			});
 
 			return CommandResult.success();
 		}

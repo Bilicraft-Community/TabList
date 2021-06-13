@@ -5,7 +5,7 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.serializer.TextSerializers;
 
-public abstract class ICommand {
+abstract class ICommand {
 
 	protected final boolean hasPerm(CommandSource src, String perm) {
 		return !(src instanceof Player) || src.hasPermission(perm);

@@ -9,15 +9,15 @@ import hu.montlikadani.tablist.TabList;
 
 public class ConfigHandlers implements Supplier<ConfigManager> {
 
-	private TabList plugin;
-	private String name;
-	private boolean setMissing;
+	private final TabList tl;
+	private final String name;
+	private final boolean setMissing;
 
 	private Path path;
 	private ConfigManager config;
 
-	public ConfigHandlers(TabList plugin, String name, boolean setMissing) {
-		this.plugin = plugin;
+	public ConfigHandlers(TabList tl, String name, boolean setMissing) {
+		this.tl = tl;
 		this.name = name;
 		this.setMissing = setMissing;
 	}
@@ -44,8 +44,8 @@ public class ConfigHandlers implements Supplier<ConfigManager> {
 	}
 
 	public void createFile() {
-		path = Sponge.getGame().getConfigManager().getPluginConfig(plugin).getDirectory();
-		config = new ConfigManager(path.toString(), name);
+		path = Sponge.getConfigManager().getPluginConfig(tl).getDirectory();
+		config = new ConfigManager(path.toString(), name, setMissing);
 		config.createFile();
 	}
 
@@ -55,6 +55,5 @@ public class ConfigHandlers implements Supplier<ConfigManager> {
 		}
 
 		config.load();
-		config.save();
 	}
 }

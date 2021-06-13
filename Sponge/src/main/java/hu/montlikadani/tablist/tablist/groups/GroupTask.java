@@ -1,85 +1,79 @@
 package hu.montlikadani.tablist.tablist.groups;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.function.Consumer;
 
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.scheduler.Task;
 
 import hu.montlikadani.tablist.TabList;
+import hu.montlikadani.tablist.config.ConfigValues;
+import hu.montlikadani.tablist.user.TabListUser;
 
 public class GroupTask implements Consumer<Task> {
 
-	private final Map<String, TabPlayer> tabPlayers = new HashMap<>();
-	private final List<TabPlayer> sortedTabPlayers = Collections.synchronizedList(new LinkedList<TabPlayer>());
+	private final java.util.Deque<TabGroupPlayer> cachedPlayers = new ConcurrentLinkedDeque<>();
 
+	private TabList tl;
 	private Task task;
 
-	public Task getTask() {
-		return task;
+	public GroupTask() {
+		Sponge.getPluginManager().getPlugin("tablist")
+				.ifPresent(container -> container.getInstance().ifPresent(inst -> tl = (TabList) inst));
 	}
 
-	public Map<String, TabPlayer> getTabPlayers() {
-		return tabPlayers;
-	}
-
-	public TabPlayer addPlayer(Player player) {
-		String uuid = player.getUniqueId().toString();
-
-		if (tabPlayers.containsKey(uuid)) {
-			return tabPlayers.get(uuid);
+	public TabGroupPlayer getGroupPlayer(TabListUser user) {
+		for (TabGroupPlayer groupPlayer : cachedPlayers) {
+			if (groupPlayer.getUser().equals(user)) {
+				return groupPlayer;
+			}
 		}
 
-		TabPlayer tabPlayer = new TabPlayer(player.getUniqueId());
-		tabPlayer.update();
-		tabPlayers.put(uuid, tabPlayer);
-		addToTabListPlayerList(tabPlayer);
+		return null;
+	}
 
-		synchronized (sortedTabPlayers) {
-			int priority = 0;
-			for (TabPlayer tabPl : sortedTabPlayers) {
-				if (!tabPl.getGroup().isPresent())
-					continue;
+	public TabGroupPlayer addPlayer(TabListUser user) {
+		if (!ConfigValues.isTablistGroups()) {
+			return null;
+		}
 
-				tabPl.getGroup().get().setTeam(tabPl.getPlayerUUID(), priority);
+		TabGroupPlayer tabGroupPlayer = getGroupPlayer(user);
+
+		if (tabGroupPlayer != null) {
+			return tabGroupPlayer;
+		}
+
+		tabGroupPlayer = new TabGroupPlayer(user);
+		tabGroupPlayer.update();
+		cachedPlayers.add(tabGroupPlayer);
+
+		int priority = 0;
+
+		for (TabGroupPlayer tabPl : cachedPlayers) {
+			Optional<TabGroup> group = tabPl.getGroup();
+
+			if (group.isPresent()) {
+				group.get().setTeam(tabPl.getUser(), priority);
 				priority++;
 			}
 		}
 
-		return tabPlayer;
+		return tabGroupPlayer;
 	}
 
-	public void removePlayer(Player player) {
-		TabPlayer tabPlayer = tabPlayers.remove(player.getUniqueId().toString());
-		if (tabPlayer != null) {
-			tabPlayer.getGroup().ifPresent(g -> g.removeTeam(player));
-			sortedTabPlayers.remove(tabPlayer);
+	public void removePlayer(TabListUser user) {
+		TabGroupPlayer gp = getGroupPlayer(user);
+
+		if (gp != null) {
+			gp.getGroup().ifPresent(g -> user.getPlayer().ifPresent(player -> g.removeTeam(player)));
+			cachedPlayers.remove(gp);
 		}
 	}
 
-	private void addToTabListPlayerList(TabPlayer tlp) {
-		int pos = 0;
-
-		synchronized (sortedTabPlayers) {
-			for (TabPlayer p : sortedTabPlayers) {
-				if (tlp.compareTo(p) < 0)
-					break;
-
-				pos++;
-			}
-		}
-
-		sortedTabPlayers.add(pos, tlp);
-	}
-
-	public void runTask() {
-		if (!isRunning()) {
-			task = Task.builder().async().intervalTicks(4).execute(this::accept).submit(TabList.get());
+	public void runTask(Object plugin) {
+		if (ConfigValues.isTablistGroups() && !isRunning()) {
+			task = Task.builder().async().intervalTicks(4).execute(this::accept).submit(plugin);
 		}
 	}
 
@@ -96,33 +90,26 @@ public class GroupTask implements Consumer<Task> {
 
 	@Override
 	public void accept(Task t) {
-		if (Sponge.getServer().getOnlinePlayers().isEmpty()) {
-			// cancel(); // Do not cancel task, due to player respawn
+		if (tl.getTabUsers().isEmpty()) {
 			return;
 		}
 
-		for (Player pl : Sponge.getServer().getOnlinePlayers()) {
-			TabPlayer tp = tabPlayers.get(pl.getUniqueId().toString());
-			if (tp == null) {
-				tp = new TabPlayer(pl.getUniqueId());
+		for (TabListUser user : tl.getTabUsers()) {
+			TabGroupPlayer groupPlayer = user.getTabPlayer();
 
-				tabPlayers.put(pl.getUniqueId().toString(), tp);
-
-				tp.update();
-				addToTabListPlayerList(tp);
-			} else if (tp.update()) {
-				sortedTabPlayers.remove(tp);
-				addToTabListPlayerList(tp);
+			if (groupPlayer.update()) {
+				cachedPlayers.remove(groupPlayer);
+				cachedPlayers.add(groupPlayer);
 			}
 		}
 
-		synchronized (sortedTabPlayers) {
-			int priority = 0;
-			for (TabPlayer tabPl : sortedTabPlayers) {
-				if (!tabPl.getGroup().isPresent())
-					continue;
+		int priority = 0;
 
-				tabPl.getGroup().get().setTeam(tabPl.getPlayerUUID(), priority);
+		for (TabGroupPlayer tabPl : cachedPlayers) {
+			Optional<TabGroup> group = tabPl.getGroup();
+
+			if (group.isPresent()) {
+				group.get().setTeam(tabPl.getUser(), priority);
 				priority++;
 			}
 		}

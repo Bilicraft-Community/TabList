@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +13,7 @@ import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
 
 import hu.montlikadani.tablist.TabList;
+import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
@@ -22,13 +22,10 @@ import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 
 public class ConfigManager {
 
-	private String path;
-	private String name;
-	private File file;
-
-	@Inject
-	@DefaultConfig(sharedRoot = true)
-	private Path configPath;
+	private final String path;
+	private final String name;
+	private final File file;
+	private final boolean setMissing;
 
 	@Inject
 	private CommentedConfigurationNode node;
@@ -37,14 +34,13 @@ public class ConfigManager {
 	@DefaultConfig(sharedRoot = true)
 	private ConfigurationLoader<CommentedConfigurationNode> loader;
 
-	public ConfigManager(String path, String name) {
+	public ConfigManager(String path, String name, boolean setMissing) {
 		this.path = path;
 		this.name = name;
+		this.setMissing = setMissing;
 
 		File folder = new File(path);
-		if (!folder.exists()) {
-			folder.mkdirs();
-		}
+		folder.mkdirs();
 
 		this.file = new File(folder, name);
 		this.loader = HoconConfigurationLoader.builder().setFile(file)
@@ -64,12 +60,7 @@ public class ConfigManager {
 	}
 
 	@Inject
-	public Path getConfigPath() {
-		return configPath;
-	}
-
-	@Inject
-	public CommentedConfigurationNode getConfigNode() {
+	public CommentedConfigurationNode getCommentedConfigNode() {
 		return node;
 	}
 
@@ -83,70 +74,57 @@ public class ConfigManager {
 			return;
 		}
 
-		try (InputStream in = TabList.get().getClass().getClassLoader().getResourceAsStream(name)) {
-			if (in != null) {
-				Files.copy(in, file.toPath());
-				in.close();
-			}
-		} catch (Exception e) {
+		try (InputStream in = TabList.class.getClassLoader().getResourceAsStream(name)) {
+			Files.copy(in, file.toPath());
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	public CommentedConfigurationNode get(Object... path) {
+	public CommentedConfigurationNode getNode(Object... path) {
 		return node.getNode(path);
 	}
 
-	public void set(Object value, Object... path) {
-		if (!contains(path) && TabList.get().getConfig().isSetMissing()) {
-			get(path).setValue(value);
+	public void set(ConfigurationNode node, Object value) {
+		if (setMissing && !contains(node)) {
+			node.setValue(value);
 		}
 	}
 
-	public void setComment(String comment, Object... path) {
-		if (comment != null && !comment.trim().isEmpty()) {
-			get(path).setComment(comment);
+	public void setComment(CommentedConfigurationNode node, String comment) {
+		if (comment != null && !comment.isEmpty()) {
+			node.setComment(comment);
 		}
 	}
 
-	public boolean getBoolean(Object... path) {
-		return get(path).getBoolean();
+	public boolean getBoolean(ConfigurationNode node, boolean def) {
+		set(node, def);
+		return node.getBoolean(def);
 	}
 
-	public boolean getBoolean(Boolean defValue, Object... path) {
-		set(defValue, path);
-		return get(path).getBoolean(defValue);
+	public int getInt(ConfigurationNode node, int def) {
+		set(node, def);
+		return node.getInt(def);
 	}
 
-	public int getInt(Object... path) {
-		return get(path).getInt();
+	public String getString(ConfigurationNode node, String def) {
+		set(node, def);
+		return node.getString(def);
 	}
 
-	public int getInt(Integer defValue, Object... path) {
-		set(defValue, path);
-		return get(path).getInt(defValue);
-	}
-
-	public String getString(Object... path) {
-		return get(path).getString();
-	}
-
-	public String getString(String defValue, Object... path) {
-		set(defValue, path);
-		return get(path).getString(defValue);
-	}
-
-	public List<String> getStringList(Object... path) {
-		return getStringList(null, path);
-	}
-
-	public List<String> getStringList(List<String> def, Object... path) {
+	public List<String> getAsList(ConfigurationNode node, List<String> def) {
 		try {
-			if (def == null) {
-				return get(path).getList(TypeToken.of(String.class));
-			}
+			return node.getList(TypeToken.of(String.class), def);
+		} catch (ObjectMappingException e) {
+			e.printStackTrace();
+		}
 
-			return get(path).getList(TypeToken.of(String.class), def);
+		return def == null ? new ArrayList<>() : def;
+	}
+
+	public List<String> getAsList(ConfigurationNode node) {
+		try {
+			return node.getList(TypeToken.of(String.class));
 		} catch (ObjectMappingException e) {
 			e.printStackTrace();
 		}
@@ -154,20 +132,16 @@ public class ConfigManager {
 		return new ArrayList<>();
 	}
 
-	public boolean contains(Object... path) {
-		return !get(path).isVirtual();
+	public boolean contains(ConfigurationNode node) {
+		return !node.isVirtual();
 	}
 
-	public boolean isExistsAndNotEmpty(Object... path) {
-		return contains(path) && !get(path).getString().isEmpty();
+	public boolean isString(ConfigurationNode node) {
+		return node.getValue() instanceof String;
 	}
 
-	public boolean isString(Object... path) {
-		return get(path).getValue() instanceof String;
-	}
-
-	public boolean isList(Object... path) {
-		return get(path).getValue() instanceof List;
+	public boolean isList(ConfigurationNode node) {
+		return node.getValue() instanceof List;
 	}
 
 	public void save() {

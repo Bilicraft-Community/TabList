@@ -1,25 +1,29 @@
 package hu.montlikadani.tablist;
 
 import org.spongepowered.api.event.Listener;
-import org.spongepowered.api.event.entity.living.humanoid.player.KickPlayerEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
-import org.spongepowered.api.scheduler.Task;
 
-public class EventListeners {
+public final class EventListeners {
+
+	private final TabList tl;
+
+	public EventListeners(TabList tl) {
+		this.tl = tl;
+	}
 
 	@Listener
 	public void onJoin(ClientConnectionEvent.Join event) {
-		Task.builder().delayTicks(2L).execute(t -> TabList.get().updateAll(event.getTargetEntity()))
-				.submit(TabList.get());
+		org.spongepowered.api.scheduler.Task.builder().delayTicks(2L)
+				.execute(t -> tl.updateAll(event.getTargetEntity())).submit(tl);
 	}
 
 	@Listener
 	public void onQuit(ClientConnectionEvent.Disconnect e) {
-		TabList.get().onQuit(e.getTargetEntity());
+		tl.onQuit(e.getTargetEntity());
 	}
 
 	@Listener
-	public void onKick(KickPlayerEvent ev) {
-		TabList.get().onQuit(ev.getTargetEntity());
+	public void onKick(org.spongepowered.api.event.entity.living.humanoid.player.KickPlayerEvent ev) {
+		tl.onQuit(ev.getTargetEntity());
 	}
 }

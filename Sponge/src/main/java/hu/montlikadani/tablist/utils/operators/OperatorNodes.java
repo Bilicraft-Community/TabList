@@ -1,13 +1,11 @@
 package hu.montlikadani.tablist.utils.operators;
 
-import org.apache.commons.lang3.StringUtils;
-
 public class OperatorNodes implements ExpressionNode {
 
 	private Condition condition;
 	private String parseExpression;
 
-	private final String[] expressions = { ">", ">=", "<", "<=", "==" }; // not equal not required
+	private final String[] expressions = { ">", ">=", "<", "<=", "==", "!=" };
 
 	public OperatorNodes(String str) {
 		setParseExpression(str);
@@ -15,7 +13,7 @@ public class OperatorNodes implements ExpressionNode {
 
 	@Override
 	public void setParseExpression(String parseExpression) {
-		if (!StringUtils.isEmpty(parseExpression)) {
+		if (parseExpression != null && !parseExpression.isEmpty()) {
 			this.parseExpression = parseExpression;
 			condition = makeConditionFromInput(parseExpression);
 		}
@@ -40,9 +38,9 @@ public class OperatorNodes implements ExpressionNode {
 		String operator = "";
 
 		for (int i = 0; i < expressions.length; i++) {
-			String expression = expressions[i];
-			String s = str.replaceAll("[^" + expression + "]", "");
-			if (s.contentEquals(expression)) {
+			String s = str.replaceAll("[^" + expressions[i] + "]", "");
+
+			if (s.contentEquals(expressions[i])) {
 				operator = s;
 			}
 		}
@@ -51,10 +49,13 @@ public class OperatorNodes implements ExpressionNode {
 			return null;
 		}
 
-		String[] c = String.valueOf(str.trim().replace(operator, ";").toCharArray()).split(";");
-		return c[0].contains("%player-ping%")
-				? (c[1].replaceAll("[^\\d]", "").matches("[0-9]+")) ? new Condition(operator, c) : null
-				: null;
+		String[] array = String.valueOf(str.replace(" ", "").replace(operator, ";").toCharArray()).split(";");
+
+		if (array.length > 1 && array[1].replaceAll("[^\\d]", "").matches("[0-9]+")) {
+			return new Condition(operator, array);
+		}
+
+		return null;
 	}
 
 	@Override

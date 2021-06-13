@@ -3,81 +3,86 @@ package hu.montlikadani.tablist.config;
 import java.util.Arrays;
 import java.util.List;
 
-import hu.montlikadani.tablist.TabList;
+import hu.montlikadani.tablist.tablist.objects.ObjectType;
+import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 
-public class ConfigValues {
+public final class ConfigValues {
 
-	private static String tablistObjectsType, customObject, timeFormat, dateFormat, timeZone;
+	private static String customObject, timeFormat, dateFormat, timeZone;
+
+	private static ObjectType tablistObjectsType;
 
 	private static boolean useSystemZone, pingFormatEnabled, tablistEnabled, randomTablist, tablistGroups,
 			useOwnScoreboard;
 
 	private static int tablistUpdateTime, objectsRefreshInterval;
 
-	private static List<String> pingColorFormats;
+	private static List<String> pingColorFormats, tabDisabledWorlds, tabRestrictedPlayers;
 
-	public static void loadValues() {
-		ConfigManager c = TabList.get().getConfig().get();
+	public static void loadValues(ConfigManager cm) {
+		CommentedConfigurationNode node = cm.getNode("placeholder-format");
+		CommentedConfigurationNode setting;
 
-		c.setComment("Placeholder formatting", "placeholder-format");
-		c.setComment("Formats/examples: https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html\n"
-				+ "Used for %server-time% placeholder", "placeholder-format", "time", "time-format");
-		timeFormat = c.getString("mm:HH", "placeholder-format", "time", "time-format", "time");
-		c.setComment("Used for %date% placeholder", "placeholder-format", "time", "date-format");
-		dateFormat = c.getString("dd/MM/yyyy", "placeholder-format", "time", "date-format", "format");
-		c.setComment("Time zones: https://www.mkyong.com/java/java-display-list-of-timezone-with-gmt/\n"
-				+ "Or google it: \"what is my time zone\"", "placeholder-format", "time", "time-zone");
-		timeZone = c.getString("GMT0", "placeholder-format", "time", "time-zone", "zone");
-		c.setComment("Use system default time zone instead of searching for that?", "placeholder-format", "time",
-				"time-zone", "use-system-zone");
-		useSystemZone = c.getBoolean(false, "placeholder-format", "time", "time-zone", "use-system-zone");
-		c.setComment("Ping color format for %player-ping% placeholder.", "placeholder-format", "ping");
-		pingFormatEnabled = c.getBoolean(true, "placeholder-format", "ping", "enabled");
+		cm.setComment(node.getNode("time", "time-format"),
+				"Formats/examples: https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html\n"
+						+ "Used for %server-time% placeholder");
+		timeFormat = cm.getString(node.getNode("time", "time-format", "time"), "mm:HH");
+		cm.setComment(node.getNode("time", "date-format"), "Used for %date% placeholder");
+		dateFormat = cm.getString(node.getNode("time", "date-format", "format"), "dd/MM/yyyy");
+		cm.setComment(node.getNode("time", "time-zone"),
+				"Time zones: https://www.mkyong.com/java/java-display-list-of-timezone-with-gmt/\n"
+						+ "Or google it: \"what is my time zone\"");
+		timeZone = cm.getString(node.getNode("time", "time-zone", "zone"), "GMT0");
+		cm.setComment(setting = node.getNode("time", "time-zone", "use-system-zone"),
+				"Use system default time zone instead of searching for that?");
+		useSystemZone = setting.getBoolean();
+		cm.setComment(node.getNode("ping"), "Ping color format for %player-ping% placeholder");
+		pingFormatEnabled = node.getNode("ping", "enabled").getBoolean(true);
 
-		c.setComment(
-				"Operators usage:\n> - highest value, \"17 > &e\" this will be yellow color\n"
-						+ ">= - highest & equal value, \"5 >= &6\" gold color\n"
-						+ "<= - less than & equal value, \"16 <= &c\" red color\n"
-						+ "< - less value, \"8 < &4\" dark red color\n"
-						+ "== - equal value, \"20 == &a\" green color if 20 is equal to current ping amount",
-				"placeholder-format", "ping", "formats");
-		pingColorFormats = c.getStringList(Arrays.asList("200 <= &a", "400 >= &6", "500 > &c"), "placeholder-format",
-				"ping", "formats");
+		cm.setComment(setting = node.getNode("ping", "formats"),
+				"Operators usage: https://github.com/montlikadani/TabList/wiki/Ping-formatting-Sponge");
+		pingColorFormats = cm.getAsList(setting, Arrays.asList("200 <= &a", "400 >= &6", "500 > &c"));
 
-		c.setComment("Tablist, header & footer with animation.\n"
-				+ "Use %anim:animationName% placeholder to make an animation.\n"
-				+ "How do I use this tab section? Usage: https://github.com/montlikadani/TabList/wiki/TabList-Usage",
-				"tablist");
+		node = cm.getNode("tablist");
 
-		c.setComment("Does the tablist enabled?", "tablist", "enabled");
-		tablistEnabled = c.getBoolean(true, "tablist", "enabled");
-		c.setComment(
-				"Define if the header & footer should be randomized.\n" + "Animation placeholders won't be affected.",
-				"tablist", "random");
-		randomTablist = c.getBoolean(false, "tablist", "random");
-		c.setComment("Tablist refresh rate in milliseconds.", "tablist", "update-time");
-		tablistUpdateTime = c.getInt(4, "tablist", "update-time");
-		c.setComment("Tablist groups that shows up on player list (prefix/suffix).", "tablist-groups");
-		tablistGroups = c.getBoolean(false, "tablist-groups", "enabled");
-		c.setComment("This option allows you to use a different scoreboard to run groups if there is a problem\n"
-				+ "with other scoreboard plugins. If it doesn’t happen that the scoreboard disappears,\n"
-				+ "you don’t need to change it.", "tablist-groups", "use-own-scoreboard");
-		useOwnScoreboard = c.getBoolean(false, "tablist-groups", "use-own-scoreboard");
+		cm.setComment(node, "Tablist, header & footer with animation.\n"
+				+ "Use %anim:animationName% placeholder to make an animation.");
 
-		c.setComment("Tablist object type to display in tablist after player name.\n"
-				+ "Available types: none, ping, custom, health", "tablist-objects", "type");
-		tablistObjectsType = c.getString("none", "tablist-objects", "type");
-		c.setComment("Custom objective setting, use any placeholder that returns an integer.", "tablist-objects",
-				"settings", "custom-value");
-		customObject = c.getString("%level%", "tablist-objects", "settings", "custom-value");
+		cm.setComment(setting = node.getNode("enabled"), "Does the tablist enabled?");
+		tablistEnabled = setting.getBoolean(true);
+		cm.setComment(setting = node.getNode("random"),
+				"Define if the header & footer should be randomized.\nAnimation placeholders won't be affected.");
+		randomTablist = setting.getBoolean();
+		cm.setComment(setting = node.getNode("update-time"), "Tablist refresh rate in milliseconds.");
+		tablistUpdateTime = setting.getInt(4);
+		cm.setComment(setting = node.getNode("disabled-worlds"), "The listed worlds where the tablist will not show");
+		tabDisabledWorlds = cm.getAsList(setting);
+		cm.setComment(setting = node.getNode("restricted-players"), "Restricted players, who's not see the tab.");
+		tabRestrictedPlayers = cm.getAsList(setting);
 
-		c.setComment(
-				"The refresh interval when the objects are refreshing.\n"
-						+ "Note: The health is not updating auto due to display issues.",
-				"tablist-objects", "refresh-interval");
-		objectsRefreshInterval = c.getInt(3, "tablist-objects", "refresh-interval");
+		node = cm.getNode("tablist-groups");
 
-		c.save();
+		cm.setComment(node, "Tablist groups that shows up on player list (prefix/suffix).");
+		tablistGroups = node.getNode("enabled").getBoolean();
+		cm.setComment(setting = node.getNode("use-own-scoreboard"),
+				"This option allows you to use a different scoreboard to run groups if there is a problem\n"
+						+ "with other scoreboard plugins. If it doesn’t happen that the scoreboard disappears,\n"
+						+ "you don’t need to change it.");
+		useOwnScoreboard = setting.getBoolean();
+
+		node = cm.getNode("tablist-objects");
+
+		cm.setComment(setting = node.getNode("type"), "Tablist object type to display in tablist after player name.\n"
+				+ "Available types: none, ping, custom, hearth");
+		tablistObjectsType = ObjectType.getByName(setting.getString("none"));
+		cm.setComment(setting = node.getNode("settings", "custom-value"),
+				"Custom objective setting, use any placeholder that returns an integer.");
+		customObject = setting.getString("%level%");
+		cm.setComment(setting = node.getNode("refresh-interval"),
+				"The refresh interval when the objects are refreshing.");
+		objectsRefreshInterval = setting.getInt(3);
+
+		cm.save();
 	}
 
 	public static String getTimeFormat() {
@@ -92,7 +97,7 @@ public class ConfigValues {
 		return timeZone;
 	}
 
-	public static String getTablistObjectsType() {
+	public static ObjectType getTablistObjectsType() {
 		return tablistObjectsType;
 	}
 
@@ -134,5 +139,13 @@ public class ConfigValues {
 
 	public static List<String> getPingColorFormats() {
 		return pingColorFormats;
+	}
+
+	public static List<String> getTabDisabledWorlds() {
+		return tabDisabledWorlds;
+	}
+
+	public static List<String> getTabRestrictedPlayers() {
+		return tabRestrictedPlayers;
 	}
 }
