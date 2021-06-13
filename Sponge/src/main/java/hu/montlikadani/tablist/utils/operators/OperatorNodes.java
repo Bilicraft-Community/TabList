@@ -79,6 +79,8 @@ public class OperatorNodes implements ExpressionNode {
 			return firstCondition <= secondCondition;
 		case "==":
 			return firstCondition == secondCondition;
+		case "!=":
+			return firstCondition != secondCondition;
 		default:
 			return false;
 		}
