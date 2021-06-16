@@ -10,6 +10,7 @@ import org.spongepowered.api.event.game.state.GameStoppingEvent;
 import org.spongepowered.api.plugin.Dependency;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.scheduler.Task;
+import org.spongepowered.api.text.Text;
 
 import hu.montlikadani.tablist.commands.SpongeCommands;
 import hu.montlikadani.tablist.config.ConfigHandlers;
@@ -242,7 +243,7 @@ public final class TabList {
 				groupTask.removePlayer(user);
 			}
 
-			tabHandler.removePlayer(user);
+			player.getTabList().setHeaderAndFooter(Text.EMPTY, Text.EMPTY);
 			return player.getUniqueId().equals(user.getUniqueId());
 		});
 	}

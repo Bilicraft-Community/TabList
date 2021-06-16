@@ -51,10 +51,6 @@ public class TabHandler {
 		}
 	}
 
-	public void removePlayer(TabListUser user) {
-		user.getPlayer().ifPresent(player -> user.getTabListManager().sendTabList(player, "", ""));
-	}
-
 	public void removeAll() {
 		cancelTask();
 

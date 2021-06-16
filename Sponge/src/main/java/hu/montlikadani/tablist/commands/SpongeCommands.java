@@ -1,7 +1,6 @@
 package hu.montlikadani.tablist.commands;
 
 import java.util.Optional;
-import java.util.function.Supplier;
 
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandCallable;
@@ -17,10 +16,9 @@ import hu.montlikadani.tablist.TabList;
 import hu.montlikadani.tablist.tablist.TabHandler;
 import hu.montlikadani.tablist.user.TabListUser;
 
-public final class SpongeCommands extends ICommand implements Supplier<CommandCallable> {
+public final class SpongeCommands extends ICommand {
 
 	private final TabList plugin;
-	private final CommandCallable toggleCmd;
 
 	public SpongeCommands() {
 		throw new IllegalAccessError(getClass().getSimpleName() + " can't be instantiated.");
@@ -29,13 +27,15 @@ public final class SpongeCommands extends ICommand implements Supplier<CommandCa
 	public SpongeCommands(TabList plugin) {
 		this.plugin = plugin;
 
-		toggleCmd = CommandSpec.builder().description(Text.of("Toggles the visibility of tablist"))
+		final CommandCallable toggleCmd = CommandSpec.builder()
+				.description(Text.of("Toggles the visibility of tablist"))
 				.arguments(GenericArguments.optional(GenericArguments.firstParsing(
 						GenericArguments.onlyOne(GenericArguments.player(Text.of("player"))),
 						GenericArguments.string(Text.of("all")))))
 				.permission("tablist.toggle").executor(this::processToggle).build();
 
-		Sponge.getCommandManager().register(plugin, get(), new String[] { "tablist", "tl" });
+		Sponge.getCommandManager().register(plugin, CommandSpec.builder().child(toggleCmd, "toggle")
+				.description(Text.of("Toggling tablist visibility")).build(), new String[] { "tablist", "tl" });
 	}
 
 	private CommandResult processToggle(CommandSource src, CommandContext args) {
@@ -91,11 +91,5 @@ public final class SpongeCommands extends ICommand implements Supplier<CommandCa
 
 		sendMsg(src, "&cUsage: /" + args.<String>getOne("tablist").orElse("tablist") + " toggle <player;all>");
 		return CommandResult.empty();
-	}
-
-	@Override
-	public CommandCallable get() {
-		return CommandSpec.builder().child(toggleCmd, "toggle").description(Text.of("Toggling tablist visibility"))
-				.build();
 	}
 }

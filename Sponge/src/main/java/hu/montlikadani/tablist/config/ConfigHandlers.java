@@ -43,7 +43,7 @@ public class ConfigHandlers implements Supplier<ConfigManager> {
 		return setMissing;
 	}
 
-	public void createFile() {
+	private void createFile() {
 		path = Sponge.getConfigManager().getPluginConfig(tl).getDirectory();
 		config = new ConfigManager(path.toString(), name, setMissing);
 		config.createFile();

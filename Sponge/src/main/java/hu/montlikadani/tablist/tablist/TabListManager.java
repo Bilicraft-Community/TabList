@@ -46,7 +46,7 @@ public class TabListManager {
 			return;
 		}
 
-		sendTabList(player, "", "");
+		sendTabList(player, Text.EMPTY, Text.EMPTY);
 
 		if (TabHandler.TABENABLED.getOrDefault(user.getUniqueId(), false)) {
 			return;
@@ -115,7 +115,7 @@ public class TabListManager {
 			if (ConfigValues.getTabDisabledWorlds().contains(player.getWorld().getName())
 					|| ConfigValues.getTabRestrictedPlayers().contains(player.getName())
 					|| TabHandler.TABENABLED.getOrDefault(user.getUniqueId(), false)) {
-				sendTabList(player, "", "");
+				sendTabList(player, Text.EMPTY, Text.EMPTY);
 				return;
 			}
 
@@ -196,6 +196,6 @@ public class TabListManager {
 	}
 
 	public void clearTab() {
-		user.getPlayer().ifPresent(player -> sendTabList(player, "", ""));
+		user.getPlayer().ifPresent(player -> sendTabList(player, Text.EMPTY, Text.EMPTY));
 	}
 }

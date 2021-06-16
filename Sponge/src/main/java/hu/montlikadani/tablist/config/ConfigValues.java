@@ -12,8 +12,7 @@ public final class ConfigValues {
 
 	private static ObjectType tablistObjectsType;
 
-	private static boolean useSystemZone, pingFormatEnabled, tablistEnabled, randomTablist, tablistGroups,
-			useOwnScoreboard;
+	private static boolean useSystemZone, pingFormatEnabled, tablistEnabled, randomTablist, tablistGroups;
 
 	private static int tablistUpdateTime, objectsRefreshInterval;
 
@@ -64,11 +63,6 @@ public final class ConfigValues {
 
 		cm.setComment(node, "Tablist groups that shows up on player list (prefix/suffix).");
 		tablistGroups = node.getNode("enabled").getBoolean();
-		cm.setComment(setting = node.getNode("use-own-scoreboard"),
-				"This option allows you to use a different scoreboard to run groups if there is a problem\n"
-						+ "with other scoreboard plugins. If it doesn’t happen that the scoreboard disappears,\n"
-						+ "you don’t need to change it.");
-		useOwnScoreboard = setting.getBoolean();
 
 		node = cm.getNode("tablist-objects");
 
@@ -111,10 +105,6 @@ public final class ConfigValues {
 
 	public static boolean isTablistGroups() {
 		return tablistGroups;
-	}
-
-	public static boolean isUseOwnScoreboard() {
-		return useOwnScoreboard;
 	}
 
 	public static boolean isTablistEnabled() {

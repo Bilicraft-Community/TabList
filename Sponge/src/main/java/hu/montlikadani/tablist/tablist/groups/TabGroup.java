@@ -7,7 +7,6 @@ import org.spongepowered.api.scoreboard.Team;
 import org.spongepowered.api.text.Text;
 
 import hu.montlikadani.tablist.TabList;
-import hu.montlikadani.tablist.config.ConfigValues;
 import hu.montlikadani.tablist.user.TabListUser;
 import hu.montlikadani.tablist.utils.Util;
 
@@ -79,38 +78,32 @@ public class TabGroup implements Cloneable {
 
 	public void setTeam(final TabListUser user, int priority) {
 		user.getPlayer().ifPresent(player -> {
-			final String pref = tl.makeAnim(prefix), suf = tl.makeAnim(suffix);
-			final Scoreboard board = getScoreboard(player);
-
 			String teamName = Integer.toString(100000 + priority) + groupName;
 
 			if (teamName.length() > 16) {
 				teamName = teamName.substring(0, 16);
 			}
 
+			final Scoreboard board = Util.GLOBAL_SCORE_BOARD;
+
 			if (!board.getTeam(teamName).isPresent()) {
 				board.registerTeam(Team.builder().name(teamName).build());
+				player.setScoreboard(board);
 			}
 
+			final String pref = tl.makeAnim(prefix), suf = tl.makeAnim(suffix);
 			final Text resultName = tl.getVariables().replaceVariables(player, pref + player.getName() + suf);
 
-			tl.getTabUsers().forEach(users -> users.getPlayer()
-					.ifPresent(pl -> pl.getTabList().getEntry(player.getUniqueId()).ifPresent(te -> {
-						te.setDisplayName(resultName);
-						pl.setScoreboard(board);
-					})));
+			tl.getTabUsers().forEach(users -> users.getPlayer().ifPresent(pl -> pl.getTabList()
+					.getEntry(player.getUniqueId()).ifPresent(te -> te.setDisplayName(resultName))));
 		});
 	}
 
 	public void removeTeam(final Player player) {
-		getScoreboard(player).getTeam(getFullGroupName()).ifPresent(Team::unregister);
+		Util.GLOBAL_SCORE_BOARD.getTeam(getFullGroupName()).ifPresent(Team::unregister);
 
 		// Get a new scoreboard
 		player.setScoreboard(Util.getNewScoreboard());
-	}
-
-	public Scoreboard getScoreboard(Player player) {
-		return ConfigValues.isUseOwnScoreboard() ? player.getScoreboard() : Util.GLOBAL_SCORE_BOARD;
 	}
 
 	@Override

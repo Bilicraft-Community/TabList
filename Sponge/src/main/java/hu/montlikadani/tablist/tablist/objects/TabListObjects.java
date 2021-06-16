@@ -67,7 +67,7 @@ public class TabListObjects {
 			return;
 		}
 
-		ObjectType type = ConfigValues.getTablistObjectsType();
+		final ObjectType type = ConfigValues.getTablistObjectsType();
 		if (type == ObjectType.NONE) {
 			return;
 		}

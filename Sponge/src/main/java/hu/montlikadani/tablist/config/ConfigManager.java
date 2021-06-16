@@ -10,7 +10,6 @@ import java.util.List;
 import org.spongepowered.api.config.DefaultConfig;
 
 import com.google.common.reflect.TypeToken;
-import com.google.inject.Inject;
 
 import hu.montlikadani.tablist.TabList;
 import ninja.leaping.configurate.ConfigurationNode;
@@ -27,10 +26,9 @@ public class ConfigManager {
 	private final File file;
 	private final boolean setMissing;
 
-	@Inject
 	private CommentedConfigurationNode node;
 
-	@Inject
+	@com.google.inject.Inject
 	@DefaultConfig(sharedRoot = true)
 	private ConfigurationLoader<CommentedConfigurationNode> loader;
 
@@ -44,7 +42,7 @@ public class ConfigManager {
 
 		this.file = new File(folder, name);
 		this.loader = HoconConfigurationLoader.builder().setFile(file)
-				.setDefaultOptions(ConfigurationOptions.defaults().withShouldCopyDefaults(true)).build();
+				.setDefaultOptions(ConfigurationOptions.defaults()).build();
 	}
 
 	public String getPath() {
@@ -59,12 +57,10 @@ public class ConfigManager {
 		return file;
 	}
 
-	@Inject
 	public CommentedConfigurationNode getCommentedConfigNode() {
 		return node;
 	}
 
-	@Inject
 	public ConfigurationLoader<CommentedConfigurationNode> getConfigLoader() {
 		return loader;
 	}
