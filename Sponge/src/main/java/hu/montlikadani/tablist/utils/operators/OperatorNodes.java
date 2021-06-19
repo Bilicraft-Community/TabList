@@ -60,12 +60,12 @@ public class OperatorNodes implements ExpressionNode {
 
 	@Override
 	public boolean parse(int firstCondition) {
-		if (condition == null) {
+		if (firstCondition < 0) {
 			return false;
 		}
 
 		int secondCondition = condition.getSecondCondition();
-		if (secondCondition < 0 || firstCondition < 0)
+		if (secondCondition < 0)
 			return false;
 
 		switch (condition.getOperator()) {

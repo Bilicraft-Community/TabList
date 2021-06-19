@@ -44,7 +44,11 @@ public final class Variables {
 		}
 
 		for (String f : ConfigValues.getPingColorFormats()) {
-			nodes.add(new OperatorNodes(f));
+			ExpressionNode node = new OperatorNodes(f);
+
+			if (node.getCondition() != null) {
+				nodes.add(node);
+			}
 		}
 
 		int size = nodes.size();
