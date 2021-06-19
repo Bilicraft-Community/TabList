@@ -36,7 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Plugin(
 		id = "tablist",
 		name = "TabList",
-		version = "1.0.3",
+		version = "1.0.4",
 		description = "An ultimate animated tablist",
 		authors = "montlikadani",
 		dependencies = @Dependency(id = "spongeapi", version = "7.3.0"))
